@@ -1,28 +1,113 @@
-const router = require('express').Router();
-const { Tag, Product, ProductTag } = require('../../models');
+const router = require("express").Router();
+const { Tag, Product, ProductTag } = require("../../models");
 
 // The `/api/tags` endpoint
 
-router.get('/', (req, res) => {
+router.get("/", (req, res) => {
   // find all tags
-  // be sure to include its associated Product data
+  Tag.findAll({
+    attributes: ["id", "tag_name"],
+    include: [
+      {
+        model: Product,
+        attributes: ["id", "product_name", "price", "stock"],
+      },
+    ],
+    include: [
+      {
+        model: ProductTag,
+        attributes: ["id", "product_id", "tag_id"],
+      },
+    ],
+  })
+    .then((dbTag) => res.json(dbTag))
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 });
 
-router.get('/:id', (req, res) => {
-  // find a single tag by its `id`
-  // be sure to include its associated Product data
+router.get("/:id", (req, res) => {
+  Tag.findOne({
+    where: {
+      id: req.params.id,
+    },
+    attributes: ["id", "tag_name"],
+    include: [
+      {
+        model: Product,
+        attributes: ["id", "product_name", "price", "stock"],
+      },
+    ],
+    include: [
+      {
+        model: ProductTag,
+        attributes: ["id", "product_id", "tag_id"],
+      },
+    ],
+  })
+    .then((dbCategory) => {
+      if (!dbCategory) {
+        res
+          .status(404)
+          .json({ message: "Please check your information and try again" });
+        return;
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 });
 
-router.post('/', (req, res) => {
+router.post("/", (req, res) => {
   // create a new tag
+  Tag.create({
+    tag_name: req.body.tag_name,
+  })
+    .then((dbTag) => res.json(dbTag))
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 });
 
-router.put('/:id', (req, res) => {
+router.put("/:id", (req, res) => {
   // update a tag's name by its `id` value
+  Tag.update({
+    tag_name: req.body.tag_name,
+  })
+    .then((dbTag) => {
+      if (!dbTag) {
+        res.status(400).json({ message: "No category found by this id" });
+        return;
+      }
+      res.json(dbTag);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 });
 
-router.delete('/:id', (req, res) => {
-  // delete on tag by its `id` value
+router.delete("/:id", (req, res) => {
+  // delete a category by its `id` value
+  Tag.destroy({
+    where: {
+      id: req.params.id,
+    },
+  })
+    .then((dbTag) => {
+      if (!dbTag) {
+        res.status(400).json({ message: "No category found by this ID" });
+        return;
+      }
+      res.json(dbTag);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json(err);
+    });
 });
 
 module.exports = router;
