@@ -10,17 +10,12 @@ router.get("/", (req, res) => {
     include: [
       {
         model: Product,
-        attributes: ["id", "product_name", "price", "stock"],
-      },
-    ],
-    include: [
-      {
-        model: ProductTag,
-        attributes: ["id", "product_id", "tag_id"],
+        as: "tagged_product",
+        attributes: ["id", "product_name", "price", "stock", "category_id"],
       },
     ],
   })
-    .then((dbTag) => res.json(dbTag))
+    .then((dbTagData) => res.json(dbTagData))
     .catch((err) => {
       console.log(err);
       res.status(500).json(err);
@@ -36,13 +31,8 @@ router.get("/:id", (req, res) => {
     include: [
       {
         model: Product,
-        attributes: ["id", "product_name", "price", "stock"],
-      },
-    ],
-    include: [
-      {
-        model: ProductTag,
-        attributes: ["id", "product_id", "tag_id"],
+        as: "tagged_product",
+        attributes: ["id", "product_name", "price", "stock", "category_id"],
       },
     ],
   })
@@ -74,9 +64,16 @@ router.post("/", (req, res) => {
 
 router.put("/:id", (req, res) => {
   // update a tag's name by its `id` value
-  Tag.update({
-    tag_name: req.body.tag_name,
-  })
+  Tag.update(
+    {
+      tag_name: req.body.tag_name,
+    },
+    {
+      where: {
+        id: req.params.id,
+      },
+    }
+  )
     .then((dbTag) => {
       if (!dbTag) {
         res.status(400).json({ message: "No category found by this id" });
