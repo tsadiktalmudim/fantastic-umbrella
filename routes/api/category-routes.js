@@ -41,6 +41,7 @@ router.get("/:id", (req, res) => {
           .json({ message: "Please check your information and try again" });
         return;
       }
+      res.json(dbCategory);
     })
     .catch((err) => {
       console.log(err);
